@@ -1,0 +1,4 @@
+Just an error message
+This field was wrong at <root>.foo.bar
+The field here was wrong at <root>.foo.bar (L3:20)
+The field here was wrong at <root>.foo.bar (L3:20-5:0)

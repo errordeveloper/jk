@@ -1,5 +1,6 @@
 import * as std from '../index';
 import * as param from '../param';
+import { formatError, ValidationError } from '../schema';
 
 // ValidateResult is the canonical type of results for a validation
 // procedure.
@@ -7,8 +8,19 @@ type ValidateResult = 'ok' | string[];
 
 // ValidateFnResult is the range of results we accept from an ad-hoc
 // procedure given to us.
-type ValidateFnResult = boolean | string | string[];
+type ValidateFnResult = boolean | string | (string | ValidationError)[];
 type ValidateFn = (obj: any) => ValidateFnResult | Promise<ValidateFnResult>;
+
+function isValidationError(err: string | ValidationError): err is ValidationError {
+  return (typeof err === 'object' && 'msg' in err);
+};
+
+function maybeFormatError(msg: string | ValidationError): string {
+  if (isValidationError(msg)) {
+    return formatError(msg);
+  }
+  return msg;
+}
 
 async function normaliseResult(val: Promise<ValidateFnResult>): Promise<ValidateResult> {
   const result = await val;
@@ -20,7 +32,7 @@ async function normaliseResult(val: Promise<ValidateFnResult>): Promise<Validate
     if (result) return 'ok';
     return ['value not valid'];
   case 'object':
-    if (Array.isArray(result)) return result;
+    if (Array.isArray(result)) return result.map(maybeFormatError);
     break;
   default:
   }

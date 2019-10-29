@@ -24,6 +24,24 @@ export interface ValidationError {
   end?: Location;
 }
 
+/**
+ * formatError formats a validation error in a standard way.
+ */
+export function formatError(err: ValidationError): string {
+  let out = err.msg;
+  if (err.path !== undefined) {
+    out = `${err.msg} at ${err.path}`;
+  }
+  if (err.start !== undefined) {
+    if (err.end !== undefined) {
+      out = `${out} (L${err.start.line}:${err.start.column}-${err.end.line}:${err.end.column})`;
+    } else {
+      out = `${out} (L${err.start.line}:${err.start.column})`;
+    }
+  }
+  return out;
+}
+
 export type Result = 'ok' | ValidationError[];
 
 function decodeResponse(bytes: Uint8Array): Result {
